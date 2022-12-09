@@ -25,6 +25,8 @@ JOIN disaster_length ON disaster_length.length_id = T.length_id
 GROUP BY (county_name)
 ORDER BY (cost_per_capita) DESC;
 
+DROP VIEW IF EXISTS sum_cost_wildfire;
+
 CREATE VIEW sum_cost_wildfire AS
 SELECT SUM(cost)
 FROM disaster
