@@ -31,3 +31,23 @@ CREATE VIEW sum_cost_wildfire AS
 SELECT SUM(cost)
 FROM disaster
 WHERE disaster_type_id = 1;
+
+
+CREATE VIEW disasters_large_pop AS 	
+SELECT disaster.title, county_name, population
+	FROM disaster 
+	JOIN location_has_disaster ON location_has_disaster.disaster_id = disaster.disaster_id
+	JOIN location ON location.county_id = location_has_disaster.county_id
+    WHERE population > 100000
+	GROUP BY(location_has_disaster.county_id); 
+
+
+DROP VIEW IF EXISTS disaster_duration;
+CREATE VIEW disaster_duration AS 
+SELECT disaster.title, disaster_length.days 
+	FROM disaster 
+    JOIN disaster_length ON 
+    disaster_length.length_id = disaster.length_id
+    WHERE days > 0 
+    ORDER BY days DESC;
+    
