@@ -1,7 +1,29 @@
 use team_4_database; 
 
-DROP VIEW IF EXISTS county_disaster_count;
+DROP VIEW IF EXISTS days_avg;
+CREATE VIEW as days_avg AS
+SELECT disaster_id, AVG(days)
+FROM disaster_length
+JOIN disaster USING (length_id)
+GROUP BY disaster_id
+HAVING AVG (days) >2;
 
+DROP VIEW IF EXISTS disasters_large_pop;
+CREATE VIEW disasters_large_pop AS 	
+SELECT disaster.title, county_name, population
+	FROM disaster 
+	JOIN location_has_disaster ON location_has_disaster.disaster_id = disaster.disaster_id
+	JOIN location ON location.county_id = location_has_disaster.county_id
+    WHERE population > 100000
+	GROUP BY(location_has_disaster.county_id); 
+	
+DROP VIEW IF EXISTS sum_cost_wildfire;
+CREATE VIEW sum_cost_wildfire AS
+SELECT SUM(cost)
+FROM disaster
+WHERE disaster_type_id = 1;
+
+DROP VIEW IF EXISTS county_disaster_count;
 CREATE VIEW county_disaster_count AS 
 SELECT county_name, COUNT(location_has_disaster.disaster_id) AS "Disaster Count", population
 FROM disaster 
@@ -10,8 +32,32 @@ JOIN location ON location.county_id = location_has_disaster.county_id
 GROUP BY(location_has_disaster.county_id)
 ORDER BY(COUNT(location_has_disaster.disaster_id)) DESC;
 
-DROP VIEW IF EXISTS cost_per_capita_and_length;
+DROP VIEW IF EXISTS disaster_in_county;
+CREATE VIEW disaster_in_county AS
+SELECT disaster_type, county_name
+FROM disaster_type
+JOIN disaster USING (disaster_type_id)
+JOIN location_has_disaster USING (disaster_id)
+JOIN location USING (county_id)
+ORDER BY county_name;
 
+DROP VIEW IF EXISTS cost_id;
+CREATE VIEW cost_id AS
+SELECT cost
+FROM disaster
+JOIN disaster_length USING (length_id)
+GROUP BY cost;
+
+DROP VIEW IF EXISTS acres_burnt_over_days;
+CREATE VIEW acres_burnt_over_days AS
+SELECT disaster_type, days, acres_burnt
+FROM disaster_type
+JOIN disaster USING (disaster_type_id)
+JOIN disaster_length USING (length_id)
+WHERE days IS NOT NULL AND acres_burnt IS NOT NULL
+ORDER BY acres_burnt;
+
+DROP VIEW IF EXISTS cost_per_capita_and_length;
 CREATE VIEW cost_per_capita_and_length AS 
 SELECT total_damage/population AS "cost_per_capita", county_name, AVG(days)
 FROM (
@@ -25,23 +71,6 @@ JOIN disaster_length ON disaster_length.length_id = T.length_id
 GROUP BY (county_name)
 ORDER BY (cost_per_capita) DESC;
 
-DROP VIEW IF EXISTS sum_cost_wildfire;
-
-CREATE VIEW sum_cost_wildfire AS
-SELECT SUM(cost)
-FROM disaster
-WHERE disaster_type_id = 1;
-
-
-CREATE VIEW disasters_large_pop AS 	
-SELECT disaster.title, county_name, population
-	FROM disaster 
-	JOIN location_has_disaster ON location_has_disaster.disaster_id = disaster.disaster_id
-	JOIN location ON location.county_id = location_has_disaster.county_id
-    WHERE population > 100000
-	GROUP BY(location_has_disaster.county_id); 
-
-
 DROP VIEW IF EXISTS disaster_duration;
 CREATE VIEW disaster_duration AS 
 SELECT disaster.title, disaster_length.days 
@@ -51,3 +80,16 @@ SELECT disaster.title, disaster_length.days
     WHERE days > 0 
     ORDER BY days DESC;
     
+DROP VIEW IF EXISTS declaration_length_compared_to_disaster_length;
+CREATE VIEW declaration_length_compared_to_disaster_length AS
+SELECT disaster_type, length_of_declaration, days AS "length_of_disaster"
+FROM disaster_type
+JOIN disaster USING (disaster_type_id)
+JOIN disaster_length USING (length_id)
+JOIN federal_response USING (declaration_id)
+WHERE length_of_declaration IS NOT NULL AND days IS NOT NULL
+ORDER BY length_of_declaration;
+SELECT * FROM declaration_length_compared_to_disaster_length
+
+    
+
