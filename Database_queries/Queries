@@ -89,7 +89,6 @@ JOIN disaster_length USING (length_id)
 JOIN federal_response USING (declaration_id)
 WHERE length_of_declaration IS NOT NULL AND days IS NOT NULL
 ORDER BY length_of_declaration;
-SELECT * FROM declaration_length_compared_to_disaster_length
 
     
 
