@@ -1,4 +1,4 @@
-use team_4_database; 
+USE team_4_database; 
 
 DROP VIEW IF EXISTS days_avg;
 CREATE VIEW as days_avg AS
